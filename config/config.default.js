@@ -54,7 +54,7 @@ module.exports = appInfo => {
 
   // egg-cors 解决跨域安全相关问题
   config.cors = {
-    origin: "localhost:3000", //只允许这个域进行访问接口;设置为 '*' 表示所有的域都可以访问(这是很不安全的)
+    origin: "http://127.0.0.1:3000", //只允许这个域进行访问接口;设置为 '*' 表示所有的域都可以访问(这是很不安全的)
     credentials: true, // 开启认证(允许携带cookie)
     allowMethods: "GET,HEAD,PUT,POST,DELETE,PATCH,OPTIONS" // 设置允许的请求方法
   }

@@ -2,34 +2,50 @@
  * @Author: golderBrother
  * @Date: 2019-10-27 18:56:01 
  * @Last Modified by: james.zhang
- * @Last Modified time: 2019-10-28 19:49:13
+ * @Last Modified time: 2019-10-29 16:58:34
  * @Description: 前端的controller 
  */
 
-const { Controller } = require('egg')
+const {
+    Controller
+} = require('egg')
 class HomeController extends Controller {
-    async index(){
+    async index() {
         // 获取用户表的数据
-        const {app, ctx} = this;
+        const {
+            app,
+            ctx
+        } = this;
         // ctx.body = '前端的API接口'
         const result = await app.mysql.get('blog_content', {});
         ctx.body = result;
     }
 
     // 获取文章列表
-    async getArticleList(){
-        const {app, ctx} = this;
+    async getArticleList() {
+        const {
+            app,
+            ctx
+        } = this;
         // 修改时间戳为日期格式: FROM_UNIXTIME(article.addTime, '%Y-%m-%d %H:%i:%s')
         const articleListSql = `SELECT article.id as id, article.type_id as type_id, article.title as title, article.introduce as introduce, article.article_content as article_content, FROM_UNIXTIME(article.addTime, '%Y-%m-%d %H:%i:%s') as addTime, article.view_count as view_count, type.typeName as typeName FROM article LEFT JOIN type ON type_id = type.id;`;
-        const result = await app.mysql.query(articleListSql);
-        console.log(`getArticleList: `, result);
-        ctx.body = result;
+        // 文章的列表信息
+        const resList = await app.mysql.query(articleListSql);
+        // 文章类别信息
+        const resType = await app.mysql.select('type');
+        ctx.body = {
+            list: resList,
+            type: resType
+        };
     }
 
     // 根据文章ID获取文章详情  
-    async getArticleById(){
-        console.log("getArticleById")
-        const { app, ctx } = this;
+    async getArticleById() {
+        const {
+            app,
+            ctx
+        } = this;
+        console.log("getArticleById id", ctx.params.id);
         let id = ctx.params.id;
         const articleDetailsSql = `
             SELECT
@@ -46,14 +62,9 @@ class HomeController extends Controller {
                 LEFT JOIN type ON type_id = type.id
             WHERE type_id = ${id};
         `;
-        // 文章的列表信息
-        const resList = await app.mysql.query(articleDetailsSql);
-        // 文章类别信息
-        const resType = await app.mysql.select('type');
-        ctx.body = {
-            list: resList,
-            type: resType
-        };
+        // 文章的详情信息
+        const result = await app.mysql.query(articleDetailsSql);
+        ctx.body = result;
     }
 }
 module.exports = HomeController
