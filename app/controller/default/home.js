@@ -2,7 +2,7 @@
  * @Author: golderBrother
  * @Date: 2019-10-27 18:56:01 
  * @Last Modified by: james.zhang
- * @Last Modified time: 2019-10-29 16:58:34
+ * @Last Modified time: 2019-11-04 15:44:41
  * @Description: 前端的controller 
  */
 
@@ -45,8 +45,9 @@ class HomeController extends Controller {
             app,
             ctx
         } = this;
-        console.log("getArticleById id", ctx.params.id);
-        let id = ctx.params.id;
+        //先配置路由的动态传值，然后再接收值
+        // /default/getArticleById/:id
+        let {id = ""} = ctx.params;
         const articleDetailsSql = `
             SELECT
                 article.id AS id,
@@ -64,7 +65,41 @@ class HomeController extends Controller {
         `;
         // 文章的详情信息
         const result = await app.mysql.query(articleDetailsSql);
-        ctx.body = result;
+        ctx.body = {
+            data: result
+        };
+    }
+
+    // 根据问猴子那个类别ID获取文章列表
+    async getListById(){
+        const { ctx } = this;
+        //先配置路由的动态传值，然后再接收值
+        // '/default/getListById/:id'
+        const {id = ""} = ctx.params;
+        const listSql = `
+            SELECT article.id as id,
+            article.title as title,
+            article.type_id as type_id,
+            article.introduce as introduce,
+            article.article_content as article_content,
+            FROM_UNIXTIME(article.addTime, '%Y-%m-%d %H:%i:%s' ) as addTime,
+            article.view_count as view_count,
+            type.id as typeId,
+            type.typeName as typeName
+            FROM article LEFT JOIN TYPE ON type_id=type.id WHERE type_id = ${id};
+        `;
+        const result = await this.app.mysql.query(listSql);
+        ctx.body = {
+            data: result
+        }
+    }
+
+    // 得到类别名称和编号
+    async getTypeInfo(){
+        const result = await this.app.mysql.select("type");
+        this.ctx.body = {
+            data: result
+        }
     }
 }
 module.exports = HomeController
